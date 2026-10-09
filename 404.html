@@ -1,0 +1,291 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta name="description" content="Energy Assessment Portal for ULB energy assessment and data collection">
+
+  <meta name="theme-color" content="#0284c7">
+
+  <title>Energy Assessment Portal</title>
+
+  <!-- =========================================================
+       TAILWIND CSS
+       ========================================================= -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- =========================================================
+       TAILWIND CONFIGURATION
+       ========================================================= -->
+
+  <script>
+
+    tailwind.config = {
+
+      theme: {
+
+        extend: {
+
+          colors: {
+
+            portal: {
+
+              50: "#f0f9ff",
+              100: "#e0f2fe",
+              200: "#bae6fd",
+              300: "#7dd3fc",
+              400: "#38bdf8",
+              500: "#0ea5e9",
+              600: "#0284c7",
+              700: "#0369a1",
+              800: "#075985",
+              900: "#0c4a6e"
+
+            }
+
+          }
+
+        }
+
+      }
+
+    };
+
+  </script>
+
+  <!-- =========================================================
+       GLOBAL STYLES
+       ========================================================= -->
+
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    .portal-spinner {
+      width: 18px;
+      height: 18px;
+
+      border: 2px solid #e0f2fe;
+      border-top-color: #0284c7;
+
+      border-radius: 9999px;
+
+      animation: portal-spin 0.8s linear infinite;
+    }
+
+    @keyframes portal-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  <!-- =========================================================
+       GITHUB PAGES SPA FALLBACK
+       =========================================================
+
+       GitHub Pages sends unknown application routes to 404.html.
+
+       Example:
+
+         /city-profile
+         /energy
+         /home
+
+       The requested route is preserved and passed to index.html
+       through the "spa" query parameter.
+
+       main.js / router.js can then restore the original route.
+
+       ========================================================= -->
+
+  <script>
+
+    (() => {
+
+      const currentPath = window.location.pathname;
+      const currentSearch = window.location.search;
+      const currentHash = window.location.hash;
+
+      const requestedRoute =
+        currentPath +
+        currentSearch +
+        currentHash;
+
+      const redirectPath =
+        window.location.origin +
+        "/index.html" +
+        "?spa=" +
+        encodeURIComponent(requestedRoute);
+
+      window.location.replace(redirectPath);
+
+    })();
+
+  </script>
+
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+
+  <!-- =========================================================
+       APPLICATION HEADER
+       ========================================================= -->
+
+  <header class="border-b border-slate-200 bg-white">
+
+
+    <div class="mx-auto flex max-w-7xl items-center
+         px-4 py-4
+         sm:px-6
+         lg:px-8">
+
+      <!-- Portal Brand -->
+
+      <div class="flex min-w-0 items-center gap-3">
+
+
+        <!-- Portal Mark -->
+
+        <div class="flex h-10 w-10 shrink-0
+             items-center justify-center
+             rounded-xl
+             bg-portal-600
+             text-lg font-bold
+             text-white
+             shadow-sm" aria-hidden="true">
+          E
+        </div>
+
+
+        <!-- Portal Name -->
+
+        <div class="min-w-0">
+
+          <h1 class="truncate
+               text-base font-bold tracking-tight
+               text-slate-900
+               sm:text-lg">
+            Energy Assessment Portal
+          </h1>
+
+
+          <p class="truncate
+               text-xs text-slate-500
+               sm:text-sm">
+            ULB energy assessment and data collection
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+  </header>
+
+  <!-- =========================================================
+       FALLBACK CONTENT
+       ========================================================= -->
+
+  <main class="mx-auto flex
+           min-h-[calc(100vh-137px)]
+           max-w-7xl
+           items-center
+           justify-center
+           px-4 py-10
+           sm:px-6
+           lg:px-8">
+
+
+    <section class="w-full max-w-md
+         rounded-xl
+         border border-slate-200
+         bg-white
+         p-8
+         text-center
+         shadow-portal-card" aria-live="polite">
+
+      <!-- Loading Icon -->
+
+      <div class="mx-auto mb-5
+           flex h-12 w-12
+           items-center justify-center
+           rounded-xl
+           bg-portal-50">
+
+        <div class="portal-spinner" aria-hidden="true"></div>
+
+      </div>
+
+
+      <!-- Message -->
+
+      <h2 class="text-lg font-semibold text-slate-900">
+        Loading Energy Assessment Portal
+      </h2>
+
+
+      <p class="mt-2 text-sm leading-6 text-slate-500">
+        Please wait while we restore the requested page.
+      </p>
+
+    </section>
+
+
+  </main>
+
+  <!-- =========================================================
+       FOOTER
+       ========================================================= -->
+
+  <footer class="border-t border-slate-200 bg-white">
+
+
+    <div class="mx-auto flex max-w-7xl
+         flex-col gap-1
+         px-4 py-4
+         text-xs text-slate-500
+         sm:flex-row
+         sm:items-center
+         sm:justify-between
+         sm:px-6
+         lg:px-8">
+
+      <span>
+        Energy Assessment Portal
+      </span>
+
+
+      <span>
+        <!-- Version can be added here if required -->
+      </span>
+
+    </div>
+
+
+  </footer>
+
+</body>
+
+</html>
