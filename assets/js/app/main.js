@@ -6,10 +6,15 @@
 |
 | Routes:
 |
-|   /               → PAS Verification
-|   /home           → Dashboard
+|   /              → PAS Verification
+|   /home          → Dashboard
 |   /city-profile  → City Profile
 |   /energy        → Energy Consumption
+|
+| Works both locally and on GitHub Pages:
+|
+|   Local:         http://127.0.0.1:8003/home
+|   GitHub Pages:  https://givs01.github.io/Givs-002/home
 |
 |--------------------------------------------------------------------------
 */
@@ -18,6 +23,7 @@ import { renderVerification } from "../pages/verification.js";
 import { renderHome } from "../pages/home.js";
 import { renderCityProfile } from "../pages/city-profile.js";
 import { renderEnergy } from "../pages/energy.js";
+
 
 /*
 |--------------------------------------------------------------------------
@@ -47,91 +53,54 @@ const ROUTES = {
   }
 };
 
-/*
-|--------------------------------------------------------------------------
-| Router State
-|--------------------------------------------------------------------------
-*/
-
-let appRoot = null;
-let routerInitialized = false;
 
 /*
 |--------------------------------------------------------------------------
-| Initialize Router
+| Base Path
 |--------------------------------------------------------------------------
+|
+| Local:         http://127.0.0.1:8003/              → ""
+| GitHub Pages:  https://givs01.github.io/Givs-002/  → "/Givs-002"
+|
+| On a custom domain (no repository folder) this is "" automatically.
+|
 */
 
-export function initRouter(root) {
-  if (!root) {
-    console.error("Router initialization failed: #app root not found.");
-    return;
-  }
+export const BASE_PATH =
+  window.location.hostname.endsWith("github.io")
+    ? "/" + window.location.pathname.split("/")[1]
+    : "";
 
-  appRoot = root;
 
-  if (!routerInitialized) {
-    window.addEventListener("popstate", () => {
-      route(appRoot, window.location.pathname);
-    });
+/*
+|--------------------------------------------------------------------------
+| App route → browser URL
+|--------------------------------------------------------------------------
+|
+| "/home" → "/Givs-002/home"   (GitHub Pages)
+| "/home" → "/home"            (local)
+|
+*/
 
-    routerInitialized = true;
-  }
+export function withBase(path) {
+  const appRoute = normalizePath(path);
 
-  route(appRoot, window.location.pathname);
+  return BASE_PATH + (appRoute === "/" ? "/" : appRoute);
 }
 
-/*
-|--------------------------------------------------------------------------
-| Navigate
-|--------------------------------------------------------------------------
-*/
-
-export function navigate(path) {
-  if (!appRoot) {
-    console.error("Router has not been initialized.");
-    return;
-  }
-
-  const normalizedPath = normalizePath(path);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Update browser URL without reloading the page
-  |--------------------------------------------------------------------------
-  */
-
-  if (window.location.pathname !== normalizedPath) {
-    window.history.pushState({}, "", normalizedPath);
-  }
-
-  /*
-  |--------------------------------------------------------------------------
-  | Render requested page
-  |--------------------------------------------------------------------------
-  */
-
-  route(appRoot, normalizedPath);
-}
 
 /*
 |--------------------------------------------------------------------------
 | Route
 |--------------------------------------------------------------------------
+|
+| Accepts either an app route ("/home") or a full browser path
+| ("/Givs-002/home"). The base path is removed before matching.
+|
 */
 
 export async function route(root, path) {
-  /*
-  |--------------------------------------------------------------------------
-  | Remember application root
-  |--------------------------------------------------------------------------
-  */
-
-  if (root) {
-    appRoot = root;
-  }
-
-  if (!appRoot) {
+  if (!root) {
     console.error("Router cannot render because app root is missing.");
     return;
   }
@@ -139,14 +108,8 @@ export async function route(root, path) {
   const normalizedPath = normalizePath(path);
   const currentRoute = ROUTES[normalizedPath];
 
-  /*
-  |--------------------------------------------------------------------------
-  | 404
-  |--------------------------------------------------------------------------
-  */
-
   if (!currentRoute) {
-    renderNotFound(appRoot);
+    renderNotFound(root);
     return;
   }
 
@@ -155,77 +118,63 @@ export async function route(root, path) {
 
   /*
   |--------------------------------------------------------------------------
-  | Show loading state
+  | Show loading animation while the page is being prepared.
   |--------------------------------------------------------------------------
   */
 
-  renderPageLoader(appRoot);
-
-  /*
-  |--------------------------------------------------------------------------
-  | Render page
-  |--------------------------------------------------------------------------
-  */
+  renderPageLoader(root);
 
   try {
-    await currentRoute.page(appRoot);
+    await currentRoute.page(root);
   } catch (error) {
     console.error("Route rendering error:", error);
-    renderRouteError(appRoot);
+    renderRouteError(root);
   }
 }
+
 
 /*
 |--------------------------------------------------------------------------
 | Normalize Path
 |--------------------------------------------------------------------------
+|
+| "/Givs-002/"              → "/"
+| "/Givs-002/home/"         → "/home"
+| "/home?x=1#top"           → "/home"
+|
 */
 
-function normalizePath(path) {
+export function normalizePath(path) {
   if (!path) {
     return "/";
   }
 
   path = String(path);
 
-  /*
-  |--------------------------------------------------------------------------
-  | Remove query string
-  |--------------------------------------------------------------------------
-  */
+  /* Remove query string and hash */
+  path = path.split("?")[0].split("#")[0];
 
-  path = path.split("?")[0];
+  /* Remove repository base path */
+  if (
+    BASE_PATH &&
+    (path === BASE_PATH || path.startsWith(BASE_PATH + "/"))
+  ) {
+    path = path.slice(BASE_PATH.length);
+  }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Remove hash
-  |--------------------------------------------------------------------------
-  */
-
-  path = path.split("#")[0];
-
-  /*
-  |--------------------------------------------------------------------------
-  | Remove trailing slash
-  |--------------------------------------------------------------------------
-  */
-
+  /* Remove trailing slash */
   if (path.length > 1) {
     path = path.replace(/\/+$/, "");
   }
 
-  /*
-  |--------------------------------------------------------------------------
-  | Always start with /
-  |--------------------------------------------------------------------------
-  */
-
+  /* Always start with / */
   if (!path.startsWith("/")) {
     path = "/" + path;
   }
 
   return path || "/";
 }
+
 
 /*
 |--------------------------------------------------------------------------
@@ -241,9 +190,11 @@ function renderPageLoader(root) {
       aria-busy="true"
     >
       <div class="w-full max-w-md">
+
         <div
           class="rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm"
         >
+
           <div
             class="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-portal-600"
             aria-hidden="true"
@@ -276,11 +227,14 @@ function renderPageLoader(root) {
               style="animation-delay:300ms"
             ></span>
           </div>
+
         </div>
+
       </div>
     </section>
   `;
 }
+
 
 /*
 |--------------------------------------------------------------------------
@@ -294,9 +248,11 @@ function renderRouteError(root) {
       class="flex min-h-[60vh] items-center justify-center"
     >
       <div class="w-full max-w-lg text-center">
+
         <div
           class="rounded-2xl border border-red-200 bg-white p-8 shadow-sm"
         >
+
           <div
             class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600"
           >
@@ -319,16 +275,24 @@ function renderRouteError(root) {
           >
             Try Again
           </button>
+
         </div>
+
       </div>
     </section>
   `;
 }
 
+
 /*
 |--------------------------------------------------------------------------
 | 404
 |--------------------------------------------------------------------------
+|
+| The "Back to Verification" button uses data-nav="/". Clicks on any
+| [data-nav] element are handled centrally in main.js, which calls
+| navigate() so the base path is applied correctly.
+|
 */
 
 function renderNotFound(root) {
@@ -340,9 +304,11 @@ function renderNotFound(root) {
       class="flex min-h-[60vh] items-center justify-center"
     >
       <div class="w-full max-w-lg text-center">
+
         <div
           class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm"
         >
+
           <div class="text-5xl font-bold text-slate-200">
             404
           </div>
@@ -362,64 +328,10 @@ function renderNotFound(root) {
           >
             Back to Verification
           </button>
+
         </div>
+
       </div>
     </section>
   `;
-
-  const button = root.querySelector("[data-nav='/']");
-
-  if (button) {
-    button.addEventListener("click", () => {
-      navigate("/");
-    });
-  }
-}
-
-/*
-|--------------------------------------------------------------------------
-| Automatic Application Startup
-|--------------------------------------------------------------------------
-|
-| This is the part your previous router was missing.
-|
-|--------------------------------------------------------------------------
-*/
-
-function startApplication() {
-  /*
-  |--------------------------------------------------------------------------
-  | Find application mount point
-  |--------------------------------------------------------------------------
-  */
-
-  const root =
-    document.getElementById("app") ||
-    document.getElementById("root");
-
-  if (!root) {
-    console.error(
-      'City WASH Portal: Could not find application root. Expected element with id="app" or id="root".'
-    );
-
-    return;
-  }
-
-  initRouter(root);
-}
-
-/*
-|--------------------------------------------------------------------------
-| Start after DOM is ready
-|--------------------------------------------------------------------------
-*/
-
-if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    startApplication,
-    { once: true }
-  );
-} else {
-  startApplication();
 }
